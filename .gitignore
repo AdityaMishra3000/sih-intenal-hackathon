@@ -1,0 +1,183 @@
+# ============================================================
+# OS / Editor
+# ============================================================
+
+.DS_Store
+Thumbs.db
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+
+# ============================================================
+# Environment / Secrets
+# ============================================================
+
+.env
+.env.*
+!.env.example
+
+*.pem
+*.key
+*.crt
+
+
+# ============================================================
+# Node / React / Vite
+# ============================================================
+
+node_modules/
+.npm/
+.pnpm-store/
+.yarn/
+.yarn-cache/
+
+dist/
+build/
+.vite/
+
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+
+# ============================================================
+# Python / FastAPI / ML
+# ============================================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+.venv/
+venv/
+env/
+ENV/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+*.egg-info/
+.eggs/
+dist/
+build/
+
+pip-wheel-metadata/
+
+
+# ============================================================
+# Jupyter / Data Science
+# ============================================================
+
+.ipynb_checkpoints/
+
+*.ipynb_checkpoints
+
+# Local ML experiment outputs
+ml/runs/
+ml/outputs/
+ml/experiments/
+
+# Model checkpoints — don't accidentally commit huge files
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.bin
+
+# Keep model metadata/configs tracked if needed
+!ml/models/**/*.json
+!ml/models/**/*.yaml
+!ml/models/**/*.yml
+
+
+# ============================================================
+# Databases / Local Data
+# ============================================================
+
+*.db
+*.sqlite
+*.sqlite3
+
+# Local PostgreSQL data
+postgres_data/
+
+# Local Redis data
+redis_data/
+
+
+# ============================================================
+# Uploaded / Generated Media
+# ============================================================
+
+uploads/
+media/
+tmp/
+temp/
+
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.mp4
+*.mov
+*.wav
+*.mp3
+
+
+# ============================================================
+# Logs
+# ============================================================
+
+*.log
+logs/
+
+
+# ============================================================
+# Docker
+# ============================================================
+
+docker-compose.override.yml
+
+# Local Docker volumes if bind-mounted
+docker-data/
+docker-volumes/
+
+
+# ============================================================
+# Build / Cache
+# ============================================================
+
+.cache/
+.cache-loader/
+.parcel-cache/
+.turbo/
+
+
+# ============================================================
+# Test / Coverage
+# ============================================================
+
+coverage/
+.nyc_output/
+
+.pytest_cache/
+
+
+# ============================================================
+# Generated files
+# ============================================================
+
+*.tmp
+*.temp
+*.bak
+*.orig
