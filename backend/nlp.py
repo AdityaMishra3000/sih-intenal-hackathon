@@ -19,8 +19,8 @@ OpenAI wire format, so there is no provider-specific code below.
     LLM_PROVIDER=gemini  GEMINI_API_KEY=AIza...    # better Indic, 250 req/day
 
 Run it standalone:
-    python -m app.nlp            # self-test on 8 multilingual complaints
-    python -m app.nlp --models   # list model IDs your key can actually reach
+    python -m backend.nlp            # self-test on 8 multilingual complaints
+    python -m backend.nlp --models   # list model IDs your key can actually reach
 """
 
 import os
@@ -322,7 +322,7 @@ def enrich_raw(text: str) -> dict:
                         "not_found" in msg or "no longer available" in msg
                         or "does not exist" in msg):
                     print(f"[nlp] HINT: model {MODEL!r} is not available on this "
-                          f"key. Run `python -m app.nlp --models` and put a real "
+                          f"key. Run `python -m backend.nlp --models` and put a real "
                           f"id in .env as {'GROQ_MODEL' if PROVIDER == 'groq' else 'GEMINI_MODEL'}.")
                     break                          # retrying a bad id is pointless
     if out is None:
@@ -382,7 +382,7 @@ if __name__ == "__main__":
     print(f"provider={PROVIDER}  model={MODEL}  key={'set' if _KEY else 'MISSING'}\n")
 
     # Any free text passed on the command line classifies just that one input:
-    #   python -m app.nlp "MG road pe gaddha hai"
+    #   python -m backend.nlp "MG road pe gaddha hai"
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     todo = args if args else SAMPLES
 
