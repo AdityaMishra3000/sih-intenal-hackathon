@@ -1,48 +1,52 @@
-"""Shared data contracts — OWNER: P1. FROZEN at T+15, nobody edits after.
+from typing import Literal, Optional
 
-Created by P3 only because the file did not exist yet and dedup.py must import
-DedupResult. P1: take this over, verify against the plan, then freeze.
-"""
-
-from pydantic import BaseModel
-from typing import Optional, Literal
+from pydantic import BaseModel, Field
 
 
-# ── P2 output ────────────────────────────────────────────────
 class Enrichment(BaseModel):
-    lang: str                    # "hi" | "mr" | "en" | "hi-Latn"
-    text_en: str                 # English pivot — everything downstream uses this
-    category_l1: str             # dept key: "pwd"|"water"|"power"|"swm"|"health"|"traffic"
-    category_l2: str             # "pothole"|"streetlight_out"|"garbage_uncollected"|...
-    confidence: float            # 0-1;  < 0.55 => needs_triage
-    severity: float              # 0-1;  injury/live-wire/collapse => ~1.0
-    landmarks: list[str]         # ["MG Road", "Modern School"]
-    summary: str                 # one line for the officer queue
+    lang: str = "en"
+    text_en: str
+    category_l1: str = "revenue"
+    category_l2: str = "other"
+    confidence: float = Field(0.3, ge=0, le=1)
+    severity: float = Field(0.4, ge=0, le=1)
+    landmarks: list[str] = []
+    summary: str = "Municipal complaint requiring review"
 
 
-# ── P3 output ────────────────────────────────────────────────
 class DedupResult(BaseModel):
     decision: Literal["NEW", "LINK", "REVIEW"]
-    issue_id: Optional[int]
-    score: float
-    reasons: list[str]           # ["semantic 0.91", "82m apart", "same day"]
+    issue_id: Optional[int] = None
+    score: float = 0
+    reasons: list[str] = []
 
 
-# ── P4 output ────────────────────────────────────────────────
 class PriorityResult(BaseModel):
-    score: int                   # 0-100
-    label: Literal["P0", "P1", "P2", "P3"]
-    factors: dict[str, float]    # {"severity": 25.5, "poi_proximity": 20.0, ...}
-    why: str                     # "injury reported · school 80m · 3 citizens"
-    department: str
-    ward: str
-    sla_hours: int
+    score: int = 30
+    label: Literal["P0", "P1", "P2", "P3"] = "P2"
+    factors: dict[str, float] = {}
+    why: str = "Standard priority"
+    department: str = "Municipal Corporation"
+    ward: str = "Ward 12"
+    sla_hours: int = 72
 
 
-# ── API in ───────────────────────────────────────────────────
 class ComplaintIn(BaseModel):
-    text: str
-    lat: float
-    lng: float
+    text: str = Field(..., min_length=3, max_length=5000)
+    lat: float = Field(..., ge=-90, le=90)
+    lng: float = Field(..., ge=-180, le=180)
     channel: str = "web"
     citizen_phone: str = "9999900000"
+
+
+class StatusIn(BaseModel):
+    status: Literal["OPEN", "ACK", "IN_PROGRESS", "RESOLVED"]
+
+
+class ReassignIn(BaseModel):
+    department: str
+
+
+class PriorityOverrideIn(BaseModel):
+    score: int = Field(..., ge=0, le=100)
+    label: Literal["P0", "P1", "P2", "P3"]
