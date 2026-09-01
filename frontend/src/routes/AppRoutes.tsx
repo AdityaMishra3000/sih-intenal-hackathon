@@ -4,70 +4,36 @@ import {
   Routes,
 } from "react-router-dom";
 
-import { useAuth } from "../hooks/useAuth";
-
 import LoginPage from "../pages/auth/LoginPage";
 
 import CreateComplaint from "../pages/citizen/CreateComplaint";
-
 import MyComplaints from "../pages/citizen/MyComplaints";
-
 import ComplaintDetails from "../pages/citizen/ComplaintDetails";
 
 import { AdminDashboard } from "../pages/admin/AdminDashboard";
 import AdminIssues from "../pages/admin/AdminIssues";
 import { AdminDepartments } from "../pages/admin/AdminDepartments";
 import AdminIssueDetails from "../pages/admin/AdminIssueDetails";
+
 import { CitizenLayout } from "../components/layout/CitizenLayout";
 import { AdminLayout } from "../components/layout/AdminLayout";
+
 import { CitizenDashboard } from "../pages/citizen/CitizenDashboard";
-
-function ProtectedRoute({
-  role,
-}: {
-  role?: "citizen" | "admin";
-}) {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <Navigate
-        to="/login"
-        replace
-      />
-    );
-  }
-
-  if (
-    role &&
-    user.role !== role
-  ) {
-    return (
-      <Navigate
-        to={
-          user.role === "admin"
-            ? "/admin"
-            : "/citizen"
-        }
-        replace
-      />
-    );
-  }
-
-  return <Outlet />;
-}
 
 export function AppRoutes() {
   return (
     <Routes>
+      {/* Root */}
+      <Route
+        path="/"
+        element={
+          <Navigate
+            to="/login"
+            replace
+          />
+        }
+      />
+
       {/* Authentication */}
       <Route
         path="/login"
