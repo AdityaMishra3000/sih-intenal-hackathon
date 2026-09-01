@@ -10,6 +10,7 @@ import {
 import {
   unmergeComplaint,
 } from "../../api/complaints";
+import { CivicMap } from "../../components/maps/CivicMap";
 
 import type {
   Issue,
@@ -587,27 +588,17 @@ export default function AdminIssueDetails() {
           />
         </div>
 
-        <div className="mt-4 flex min-h-64 items-center justify-center rounded-xl bg-gray-100">
-          <div className="text-center">
-            <p className="font-medium text-gray-700">
-              GIS map
-            </p>
-
-            <p className="mt-1 text-sm text-gray-500">
-              MapLibre integration will render this
-              issue on the authority map.
-            </p>
-
-            <p className="mt-2 text-xs text-gray-400">
-              {Number(issue.lat).toFixed(
-                5,
-              )}
-              ,{" "}
-              {Number(issue.lng).toFixed(
-                5,
-              )}
-            </p>
-          </div>
+        <div className="mt-4">
+          <CivicMap
+            markers={[{
+              id: issue.id,
+              lat: issue.lat,
+              lng: issue.lng,
+              title: issue.summary,
+              subtitle: issue.ward,
+              priority: issue.priorityLabel,
+            }]}
+          />
         </div>
       </section>
 

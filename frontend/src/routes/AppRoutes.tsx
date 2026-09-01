@@ -4,8 +4,6 @@ import {
   Routes,
 } from "react-router-dom";
 
-import { useAuth } from "../hooks/useAuth";
-
 import LoginPage from "../pages/auth/LoginPage";
 
 import CreateComplaint from "../pages/citizen/CreateComplaint";
@@ -21,49 +19,6 @@ import AdminIssueDetails from "../pages/admin/AdminIssueDetails";
 import { CitizenLayout } from "../components/layout/CitizenLayout";
 import { AdminLayout } from "../components/layout/AdminLayout";
 import { CitizenDashboard } from "../pages/citizen/CitizenDashboard";
-
-function ProtectedRoute({
-  role,
-}: {
-  role?: "citizen" | "admin";
-}) {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <Navigate
-        to="/login"
-        replace
-      />
-    );
-  }
-
-  if (
-    role &&
-    user.role !== role
-  ) {
-    return (
-      <Navigate
-        to={
-          user.role === "admin"
-            ? "/admin"
-            : "/citizen"
-        }
-        replace
-      />
-    );
-  }
-
-  return <Outlet />;
-}
 
 export function AppRoutes() {
   return (

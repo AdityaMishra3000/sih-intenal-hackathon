@@ -6,7 +6,7 @@ import type {
   CreateComplaintResponse,
 } from "../types/complaint";
 
-interface BackendComplaint {
+export interface BackendComplaint {
   id: number;
 
   text: string;
@@ -34,7 +34,7 @@ interface BackendComplaint {
   state: string;
 }
 
-function mapComplaint(
+export function mapComplaint(
   data: BackendComplaint,
 ): Complaint {
   return {
@@ -85,7 +85,13 @@ export async function createComplaint(
   const response =
     await apiClient.post<CreateComplaintResponse>(
       "/complaints",
-      request,
+      {
+        text: request.text,
+        lat: request.lat,
+        lng: request.lng,
+        channel: request.channel,
+        citizen_phone: request.citizenPhone,
+      },
     );
 
   return response.data;

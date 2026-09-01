@@ -13,7 +13,7 @@ from pydantic import BaseModel
 
 from .contracts import ComplaintIn
 from .db import complaint_rows, connect, get_issue, init_db, issue_rows, now_iso, row_dict
-from .dedup import find_duplicate
+from .dedup import find_issue
 from .hotspot import analytics_stats, compute_hotspots
 from .nlp import enrich
 from .priority import score_issue
@@ -26,10 +26,24 @@ app.add_middleware(CORSMiddleware, allow_origins=["http://127.0.0.1:5173", "http
 def startup() -> None:
     """Create SQLite tables on first local run."""
     init_db()
+    _seed_demo_data_if_empty()
 
 
 def _deadline(hours: int) -> str:
     return (datetime.now(timezone.utc) + timedelta(hours=hours)).isoformat()
+
+
+def _seed_demo_data_if_empty() -> None:
+    """Populate the local demo only once, so a fresh clone has useful data."""
+    if complaint_rows():
+        return
+    from .seed import SEED_COMPLAINTS
+
+    for item in SEED_COMPLAINTS:
+        create_complaint(
+            ComplaintIn(text=item["text"], lat=item["lat"], lng=item["lng"], channel="seed"),
+            backdate=int(item.get("minutes_ago", 0)),
+        )
 
 
 def _save_complaint(con: Any, data: ComplaintIn, enrichment: Any, issue_id: int, dedup: Any, created: str) -> int:
@@ -63,8 +77,8 @@ def create_complaint(data: ComplaintIn, backdate: int = Query(0, ge=0, le=525600
     """Create a ticket, link a real duplicate if appropriate, and re-score its issue."""
     enrichment = enrich(data.text)
     existing = issue_rows()
-    dedup = find_duplicate(data.text, data.lat, data.lng, enrichment.category_l2, existing)
     created = now_iso(backdate)
+    dedup = find_issue(enrichment, data.lat, data.lng, created, existing)
     with connect() as con:
         if dedup.decision == "LINK" and dedup.issue_id:
             issue = get_issue(dedup.issue_id)
@@ -99,9 +113,20 @@ def complaint(ticket_id: int) -> dict[str, Any]:
 
 
 @app.get("/issues")
-def issues() -> list[dict[str, Any]]:
+def issues(
+    priority: str | None = None,
+    dept: str | None = None,
+    status: str | None = None,
+) -> list[dict[str, Any]]:
     """List live issue clusters, ordered for the officer queue."""
-    return issue_rows()
+    records = issue_rows()
+    if priority:
+        records = [record for record in records if record["priority_label"] == priority.upper()]
+    if dept:
+        records = [record for record in records if record["department"] == dept]
+    if status:
+        records = [record for record in records if record["status"] == status.upper()]
+    return records
 
 
 @app.get("/issues/{issue_id}")
@@ -122,6 +147,47 @@ def change_status(issue_id: int, data: StatusIn) -> dict[str, Any]:
         con.execute("UPDATE issues SET status=? WHERE id=?",(status,issue_id))
         con.execute("INSERT INTO events(issue_id,kind,note,at) VALUES(?,?,?,?)",(issue_id,"STATUS",status,now_iso()))
     return _issue_detail(issue_id)
+
+
+class ReassignIn(BaseModel):
+    department: str
+
+
+@app.post("/issues/{issue_id}/reassign")
+def reassign_issue(issue_id: int, data: ReassignIn) -> dict[str, Any]:
+    """Move an issue to another department and keep an audit event."""
+    department = data.department.strip()
+    if not department:
+        raise HTTPException(422, "Department is required")
+    with connect() as con:
+        if not con.execute("SELECT 1 FROM issues WHERE id=?", (issue_id,)).fetchone():
+            raise HTTPException(404, "Issue not found")
+        con.execute("UPDATE issues SET department=? WHERE id=?", (department, issue_id))
+        con.execute(
+            "INSERT INTO events(issue_id,kind,note,at) VALUES(?,?,?,?)",
+            (issue_id, "REASSIGNED", department, now_iso()),
+        )
+    return _issue_detail(issue_id)
+
+
+@app.post("/complaints/{ticket_id}/unmerge")
+def unmerge_complaint(ticket_id: int) -> dict[str, Any]:
+    """Detach a report from its cluster for manual officer review."""
+    with connect() as con:
+        complaint = con.execute("SELECT issue_id FROM complaints WHERE id=?", (ticket_id,)).fetchone()
+        if not complaint:
+            raise HTTPException(404, "Complaint not found")
+        issue_id = complaint["issue_id"]
+        con.execute("UPDATE complaints SET issue_id=NULL,state='UNMERGED' WHERE id=?", (ticket_id,))
+        if issue_id:
+            con.execute(
+                "UPDATE issues SET report_count=MAX(0, report_count - 1) WHERE id=?", (issue_id,)
+            )
+            con.execute(
+                "INSERT INTO events(issue_id,kind,note,at) VALUES(?,?,?,?)",
+                (issue_id, "UNMERGED", f"Complaint #{ticket_id}", now_iso()),
+            )
+    return {"ticket_id": ticket_id, "state": "UNMERGED"}
 
 
 @app.get("/analytics/stats")

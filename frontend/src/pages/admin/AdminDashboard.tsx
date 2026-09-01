@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getStats } from "../../api/analytics";
 import { getHotspots } from "../../api/analytics";
+import { CivicMap } from "../../components/maps/CivicMap";
 
 interface Stats {
   total_complaints?: number;
@@ -144,35 +145,16 @@ export function AdminDashboard() {
           </span>
         </div>
 
-        {/* Temporary map placeholder */}
-        {/*
-          Replace this section with MapLibre once the
-          hotspot response contract is finalized.
-
-          The important API boundary is already established:
-
-              GET /analytics/hotspots
-                    ↓
-                hotspots[]
-                    ↓
-                 MapLibre
-        */}
-
-        <div className="mt-5 flex min-h-[400px] items-center justify-center rounded-xl bg-gray-100">
-          <div className="text-center">
-            <p className="font-medium text-gray-700">
-              GIS hotspot map
-            </p>
-
-            <p className="mt-1 text-sm text-gray-500">
-              MapLibre integration will use the hotspot
-              data returned by the backend.
-            </p>
-
-            <p className="mt-3 text-xs text-gray-400">
-              {hotspots.length} hotspot records loaded
-            </p>
-          </div>
+        <div className="mt-5">
+          <CivicMap
+            markers={hotspots.map((hotspot, index) => ({
+              id: index,
+              lat: hotspot.lat,
+              lng: hotspot.lng,
+              title: hotspot.category ?? "Civic hotspot",
+              subtitle: hotspot.ward ?? "Pune",
+            }))}
+          />
         </div>
       </section>
 

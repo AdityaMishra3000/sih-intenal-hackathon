@@ -27,8 +27,16 @@ import os
 import json
 import re
 
-from openai import OpenAI
-from dotenv import load_dotenv
+try:
+    from openai import OpenAI
+except ImportError:  # The rule-based fallback must work without an LLM SDK.
+    OpenAI = None  # type: ignore[assignment,misc]
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    def load_dotenv() -> bool:
+        return False
 
 load_dotenv()
 
@@ -56,7 +64,7 @@ _KEY = os.getenv(_C["key_env"], "")
 
 # No key -> client stays None -> every call goes straight to the keyword
 # fallback. The pipeline still runs end to end, which is what matters at T+100.
-_client = OpenAI(api_key=_KEY, base_url=_C["base_url"]) if _KEY else None
+_client = OpenAI(api_key=_KEY, base_url=_C["base_url"]) if _KEY and OpenAI else None
 
 
 # ── Label space ───────────────────────────────────────────────────────────────

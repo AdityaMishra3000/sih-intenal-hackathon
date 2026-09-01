@@ -5,18 +5,19 @@ export function CitizenLayout() {
   const { user, signOut } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b bg-white">
+    <div className="min-h-screen bg-slate-50">
+      <header className="border-b border-slate-200/80 bg-white/85 backdrop-blur">
         <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-4">
           <Link
             to="/citizen"
-            className="text-lg font-bold text-blue-600"
+            className="flex items-center gap-2 text-lg font-bold tracking-tight text-slate-900"
           >
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-blue-600 text-xs text-white shadow-lg shadow-blue-500/25">CR</span>
             CivicResolve
           </Link>
 
-          <nav className="hidden gap-6 md:flex">
-            <Link to="/citizen">Dashboard</Link>
+          <nav className="hidden gap-2 text-sm font-medium text-slate-600 md:flex">
+            <Link className="rounded-lg px-3 py-2 transition-colors hover:bg-blue-50 hover:text-blue-700" to="/citizen">Dashboard</Link>
             <Link to="/citizen/complaints">
               My Complaints
             </Link>
@@ -42,7 +43,9 @@ export function CitizenLayout() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6">
-        <Outlet />
+        <div className="page-enter">
+          <Outlet />
+        </div>
       </main>
 
       <nav className="fixed bottom-0 left-0 right-0 border-t bg-white md:hidden">
