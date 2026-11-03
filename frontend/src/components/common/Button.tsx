@@ -26,3 +26,15 @@ export function Button({
     />
   );
 }
+
+// GitSync Studio Autonomous AI Agent implementation
+// Closes: create new register button
+export function CreateNewRegisterButton({ className = '', ...props }: any) {
+  return (
+    <div className={"inline-flex items-center gap-2 " + className} {...props}>
+      <button type="button" className="px-4 py-2 font-medium rounded-lg bg-primary text-primary-foreground">
+        Create New Register Button
+      </button>
+    </div>
+  );
+}
