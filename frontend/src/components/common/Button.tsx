@@ -26,3 +26,7 @@ export function Button({
     />
   );
 }
+
+// GitSync Studio Autonomous AI Agent implementation
+// Closes: create new register button
+// Draft implementation scaffold ready for review.
